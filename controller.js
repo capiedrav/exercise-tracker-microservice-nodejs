@@ -1,5 +1,6 @@
 const db = require("./model.js") // functions for handling the database
 
+
 function addUser(request, response){
   // adds a user to the database
   
@@ -13,11 +14,13 @@ function addUser(request, response){
   }
 }
 
+
 function getAllUsers(request, response){
   // retrieve all users from the database
 
   response.json(db.getAllUsers());
 }
+
 
 function addExercise(request, response){
   // adds an exercise to the database
@@ -34,5 +37,13 @@ function addExercise(request, response){
   
 }
 
-module.exports = {addUser, getAllUsers, addExercise};
 
+function sendUserLogs(request, response){
+  // sends info about the exercises of a user
+
+  const userId = request.params._id; // get id of the user passed in the url
+  const userExercises = db.getUserExercises(userId); // retrieve user data from database
+  response.json(userExercises); // send data as a json object
+}
+
+module.exports = {addUser, getAllUsers, addExercise, sendUserLogs};
