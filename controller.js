@@ -12,6 +12,7 @@ function addUser(request, response){
   else{
     response.json({error: "invalid username"});
   }
+  
 }
 
 
@@ -44,21 +45,17 @@ function sendUserLogs(request, response){
   const userId = request.params._id; // get id of the user passed in the url
   let userExercises = undefined;
   
-  // check for "from", "to" and "limit" query strings in the url (query strings != url parameters)
-  if (request.query.from && request.query.to && request.query.limit){
-    dateQueries = {
-      from: request.query.from,
-      to: request.query.to,
-      limit: request.query.limit 
-    };
-
-    userExercises = db.getUserExercises(userId, dateQueries); // retrieve user data from database using date queries
-  }
-  else {
-    userExercises = db.getUserExercises(userId); // retrieve user data from database
-  }
+  // get "from", "to" and "limit" query strings from the url (query strings != url parameters)  
+  const dateQueries = {
+    from: request.query.from,
+    to: request.query.to,
+    limit: request.query.limit 
+  };
+  
+  userExercises = db.getUserExercises(userId, dateQueries); // retrieve user data from database using date queries
   
   response.json(userExercises); // send data as a json object
+  
 }
 
 module.exports = {addUser, getAllUsers, addExercise, sendUserLogs};

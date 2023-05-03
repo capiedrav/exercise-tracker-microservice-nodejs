@@ -1,4 +1,4 @@
-const {v4: uuid4} = require("uuid"); // v4 function as uuid4
+const {v4: uuid4} = require("uuid"); // change name of v4 function to uuid4
 
 let database = {users: [], exercises: []};
 
@@ -10,12 +10,14 @@ function saveUser(username){
   database.users.push(newUser); // add it to the database
 
   return newUser; // return new user entry
+  
 }
 
 function getAllUsers(){
   // returns all users in the database
   
   return database.users
+  
 }
 
 
@@ -45,26 +47,28 @@ function saveExercise(formFields){
   else{ // user not found in the database
     return {error: `Error!! user with _id ${formFields._id} not found in the database`}
   }
+  
 }
 
-function getExercisesBetweenDates(userId, dateQueries){
-  // helper function that returns the exercises of a user according to "dateQueries"
 
+function filterExercisesByDates(userExercises, dateQueries){
+  // helper function that returns the exercises of a user according to "dateQueries"
+  
   const from = new Date(dateQueries.from).getTime(); // "from" in milliseconds
   const to = new Date(dateQueries.to).getTime(); // "to" in milliseconds
-  const limit = parseInt(dateQueries.limit); // "limit" as an int
-  let exercises = [];
+  const limit = parseInt(dateQueries.limit); // "limit" as an int  
   
-  if (!(isNaN(from) || isNaN(to) || isNaN(limit))){ // if the values of the variables are o.k.
-    
-    exercises = database.exercises.filter(exercise => exercise._id === userId) // get exercises of user with id == userId
-                .filter(exercise => from >= new Date(exercise.date).getTime() && to <= new Date(exercise.date).getTime()) // filter those exercises by date 
-
-    exercises = exercises.slice(0, limit); // limit the number of exercises to get
-  
+  if (!isNaN(from)){ // if "from" is present in the query   
+    userExercises = userExercises.filter(exercise => from < new Date(exercise.date).getTime()) // get exercises with dates from "from" onwards     
+  }
+  if (!isNaN(to)){ // if "to" is present in the query    
+    userExercises = userExercises.filter(exercise => to > new Date(exercise.date).getTime()) // get exercises with dates up to "to"
+  }
+  if (!isNaN(limit)){ // if "limit" is present in the query
+    userExercises = userExercises.slice(0, limit); // limit the number of exercises to get
   }
 
-  return exercises;
+  return userExercises;
   
 }
 
@@ -74,17 +78,16 @@ function getUserExercises(userId, dateQueries = undefined){
   
   let userExercises = undefined;
   
-  // verify that the user is in the database
+  // search the user in the database
   const user = database.users.filter(user => user._id === userId)[0];
   
   if (user){ // if user is in the database
     
-    if (dateQueries){ // get exercises between dates
-      userExercises = getExercisesBetweenDates(userId, dateQueries);
-    }
-    else{ // get all exercises of user      
-      userExercises = database.exercises.filter(exercise => exercise._id === userId)      
-    }     
+    // get the exercises of the user 
+    userExercises = database.exercises.filter(exercise => exercise._id === userId) 
+    
+    // get exercises between dates
+    userExercises = filterExercisesByDates(userExercises, dateQueries);       
   
     let userData = { // contains info about the user and his exercises
       username: user.username,
@@ -108,9 +111,9 @@ function getUserExercises(userId, dateQueries = undefined){
   }
   else{
     return {error: `Error!! user with _id ${userId} not found in the database`}
-  }
-  
+  }  
   
 }
+
 
 module.exports = {saveUser, getAllUsers, saveExercise, getUserExercises};
