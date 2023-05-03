@@ -47,18 +47,47 @@ function saveExercise(formFields){
   }
 }
 
+function getExercisesBetweenDates(userId, dateQueries){
+  // helper function that returns the exercises of a user according to "dateQueries"
 
-function getUserExercises(userId){
+  const from = new Date(dateQueries.from).getTime(); // "from" in milliseconds
+  const to = new Date(dateQueries.to).getTime(); // "to" in milliseconds
+  const limit = parseInt(dateQueries.limit); // "limit" as an int
+  let exercises = [];
+  
+  if (!(isNaN(from) || isNaN(to) || isNaN(limit))){ // if the values of the variables are o.k.
+    
+    exercises = database.exercises.filter(exercise => exercise._id === userId) // get exercises of user with id == userId
+                .filter(exercise => from >= new Date(exercise.date).getTime() && to <= new Date(exercise.date).getTime()) // filter those exercises by date 
+
+    exercises = exercises.slice(0, limit); // limit the number of exercises to get
+  
+  }
+
+  return exercises;
+  
+}
+
+
+function getUserExercises(userId, dateQueries = undefined){
   // returns the exercises of user identified by userId
+  
+  let userExercises = undefined;
   
   // verify that the user is in the database
   const user = database.users.filter(user => user._id === userId)[0];
+  
   if (user){ // if user is in the database
-    // retrieve all exercises of user 
-    const userExercises = database.exercises.filter(user => user._id === userId) 
+    
+    if (dateQueries){ // get exercises between dates
+      userExercises = getExercisesBetweenDates(userId, dateQueries);
+    }
+    else{ // get all exercises of user      
+      userExercises = database.exercises.filter(exercise => exercise._id === userId)      
+    }     
   
     let userData = { // contains info about the user and his exercises
-      username: userExercises[0].username,
+      username: user.username,
       count: userExercises.length,
       _id: userId
     }

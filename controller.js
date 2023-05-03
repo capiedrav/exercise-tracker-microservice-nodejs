@@ -40,9 +40,24 @@ function addExercise(request, response){
 
 function sendUserLogs(request, response){
   // sends info about the exercises of a user
-
+  
   const userId = request.params._id; // get id of the user passed in the url
-  const userExercises = db.getUserExercises(userId); // retrieve user data from database
+  let userExercises = undefined;
+  
+  // check for "from", "to" and "limit" query strings in the url (query strings != url parameters)
+  if (request.query.from && request.query.to && request.query.limit){
+    dateQueries = {
+      from: request.query.from,
+      to: request.query.to,
+      limit: request.query.limit 
+    };
+
+    userExercises = db.getUserExercises(userId, dateQueries); // retrieve user data from database using date queries
+  }
+  else {
+    userExercises = db.getUserExercises(userId); // retrieve user data from database
+  }
+  
   response.json(userExercises); // send data as a json object
 }
 
